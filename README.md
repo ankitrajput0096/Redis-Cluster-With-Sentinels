@@ -114,7 +114,7 @@ And get the sentinel infomation with following commands
 redis-cli -p 10001 -h 127.0.0.1 sentinel get-master-addr-by-name mymaster
 ```
 
-### Getting all the required from the redis sentinels about this redis cluster
+### Getting all required information from redis sentinels about this redis cluster
 #### NOTE: To run all the below commands, install redis-tools in your terminal using -> sudo apt install redis-tools
 
 |Command                                                      |    Description                                           |
