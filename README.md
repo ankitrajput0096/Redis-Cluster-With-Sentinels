@@ -1,5 +1,29 @@
-# redis-cluster-with-sentinel
+# Redis-Cluster-With-Sentinel
 **Redis cluster with Docker Compose** 
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development purposes. See running for notes on how to run the project on a system.
+
+### Prerequisites
+
+1. Clone the project to your local environment:
+    ```
+    git clone https://github.com/ankitrajput0096/Redis-Cluster-With-Sentinels
+    ```
+
+2. You need Docker to be installed:
+
+    #### Windows:
+    https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe
+    
+    #### Mac:
+    https://download.docker.com/mac/stable/Docker.dmg
+    
+    #### Ubuntu:
+    https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+## Redis Cluster Configurations Details
 
 There are following services in the cluster,
 
@@ -25,13 +49,15 @@ The default values of the environment variables for Sentinel are as following
 * SENTINEL_DOWN_AFTER: 5000
 * SENTINEL_FAILOVER: 5000
 
+## Installing and Running
 
-
-## Try it
-
-Build and start services
+Build services
 ```
-docker-compose up --build
+docker-compose build
+```
+running services
+```
+docker-compose up
 ```
 Check the status of redis cluster
 ```
@@ -39,23 +65,18 @@ docker-compose ps
 ```
 The result is 
 ```
-               Name                              Command               State    Ports   
----------------------------------------------------------------------------------------
-redisclusterwithsentinel_master_1     docker-entrypoint.sh redis ...   Up      6379/tcp 
-redisclusterwithsentinel_sentinel_1   entrypoint.sh                    Up      6379/tcp 
-redisclusterwithsentinel_slave_1      docker-entrypoint.sh redis ...   Up      6379/tcp 
+          Name                        Command               State                 Ports               
+------------------------------------------------------------------------------------------------------
+redis_cluster_master_1     docker-entrypoint.sh redis ...   Up      6379/tcp                          
+redis_cluster_sentinel_1   entrypoint.sh                    Up      0.0.0.0:10001->26379/tcp, 6379/tcp
+redis_cluster_slave_1      docker-entrypoint.sh redis ...   Up      6379/tcp  
 ```
 
-Scale out the instance number of sentinel
+### NOTE : Refer this configuration of cluster as SENTINEL_QUORUM value is 2.
+Scale out the instance number of sentinel and number of slaves/Replica
 
 ```
-docker-compose scale sentinel=3
-```
-
-Scale out the instance number of slaves
-
-```
-docker-compose scale slave=4
+docker-compose up --scale sentinel=3 --scale slave=4
 ```
 
 Check the status of redis cluster
@@ -67,41 +88,64 @@ docker-compose ps
 The result is 
 
 ```
-               Name                              Command               State    Ports   
----------------------------------------------------------------------------------------
-redisclusterwithsentinel_master_1     docker-entrypoint.sh redis ...   Up      6379/tcp 
-redisclusterwithsentinel_sentinel_1   entrypoint.sh                    Up      6379/tcp 
-redisclusterwithsentinel_sentinel_2   entrypoint.sh                    Up      6379/tcp 
-redisclusterwithsentinel_sentinel_3   entrypoint.sh                    Up      6379/tcp 
-redisclusterwithsentinel_slave_1      docker-entrypoint.sh redis ...   Up      6379/tcp 
-redisclusterwithsentinel_slave_2      docker-entrypoint.sh redis ...   Up      6379/tcp 
-redisclusterwithsentinel_slave_3      docker-entrypoint.sh redis ...   Up      6379/tcp 
-redisclusterwithsentinel_slave_4      docker-entrypoint.sh redis ...   Up      6379/tcp 
+          Name                        Command               State                 Ports               
+------------------------------------------------------------------------------------------------------
+redis_cluster_master_1     docker-entrypoint.sh redis ...   Up      6379/tcp                          
+redis_cluster_sentinel_1   entrypoint.sh                    Up      0.0.0.0:10001->26379/tcp, 6379/tcp
+redis_cluster_sentinel_2   entrypoint.sh                    Up      0.0.0.0:10002->26379/tcp, 6379/tcp
+redis_cluster_sentinel_3   entrypoint.sh                    Up      0.0.0.0:10003->26379/tcp, 6379/tcp
+redis_cluster_slave_1      docker-entrypoint.sh redis ...   Up      6379/tcp                          
+redis_cluster_slave_2      docker-entrypoint.sh redis ...   Up      6379/tcp                          
+redis_cluster_slave_3      docker-entrypoint.sh redis ...   Up      6379/tcp                          
+redis_cluster_slave_4      docker-entrypoint.sh redis ...   Up      6379/tcp  
 ```
 
-For stop master redis server.
+For pausing master redis server.
 ```
- docker-compose unpause master
+docker-compose pause master
+```
+For unpausing master redis server.
+```
+docker-compose unpause master
 ```
 And get the sentinel infomation with following commands
 
 ```
-docker-compose exec sentinel redis-cli -p 26379 SENTINEL get-master-addr-by-name mymaster
+redis-cli -p 10001 -h 127.0.0.1 sentinel get-master-addr-by-name mymaster
 ```
 
-## References
+### Getting all the required from the redis sentinels about this redis cluster
+### NOTE: To run all the below commands, install redis-tools in your terminal using -> sudo apt install redis-tools
 
-[https://github.com/AliyunContainerService/redis-cluster][1]
+|Command                                                      |    Description                                           |
+--------------------------------------------------------------|----------------------------------------------------------|	                                                  
+|redis-cli -p 10001 -h 127.0.0.1 sentinel masters             |   Show a list of all monitored masters + state           |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel master mymaster     |   Show the state of a specified master                   |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel slaves mymaster     |   Show the slaves of the master + state                  |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel sentinels mymaster  |   Show the Sentinel instances for this master + state    |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel get-master-addr-by-name mymaster | Return ip and port of the master. While a failover is in progress the ip and port of the promoted slave are returned |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel reset mymaster | Reset the masters with a matching name. Clears previous state for the master, removes every slave and sentinel discovered. A fresh discovery is started. |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel failover mymaster   |   Force a failover, as if the master was not reachable   |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel ckquorum mymaster   |   Check if the current Sentinel configuration is able to reach quorum and majority |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel flushconfig         |	  Force Sentinel to rewrite it's configuration on disk   |
+|redis-cli -p 10001 -h 127.0.0.1 sentinel remove mymaster     |	  Remove a specified master from monitoring              |
 
-[https://registry.hub.docker.com/u/joshula/redis-sentinel/] [2]
+## Built With
 
-[https://docs.docker.com/compose/] [3]
+* [Docker](https://www.docker.com/) - For containerization of application
+* [Redis](https://redis.io/) - For Redis
+* [Redis Sentinel](https://redis.io/topics/sentinel) - For Redis Sentinel
 
-[1]: https://github.com/AliyunContainerService/redis-cluster
-[2]: https://registry.hub.docker.com/u/joshula/redis-sentinel/
-[3]: https://docs.docker.com/compose/
+## Contributing
 
-## Contributors
+If you have any improvement suggestions please create a pull request and I'll review it.
 
-* Mustafa Ileri (<mi@mustafaileri.com>)
+
+## Authors
+
+* **Ankit Rajput** - *Initial work* - [Github](https://github.com/ankitrajput0096)
+
+## License
+
+This project is licensed under the MIT License
 
