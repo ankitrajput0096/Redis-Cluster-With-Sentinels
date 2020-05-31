@@ -72,7 +72,7 @@ redis_cluster_sentinel_1   entrypoint.sh                    Up      0.0.0.0:1000
 redis_cluster_slave_1      docker-entrypoint.sh redis ...   Up      6379/tcp  
 ```
 
-### NOTE : Refer this configuration of cluster as SENTINEL_QUORUM value is 2.
+#### NOTE : Refer the below configuration of cluster as SENTINEL_QUORUM value is 2.
 Scale out the instance number of sentinel and number of slaves/Replica
 
 ```
@@ -115,7 +115,7 @@ redis-cli -p 10001 -h 127.0.0.1 sentinel get-master-addr-by-name mymaster
 ```
 
 ### Getting all the required from the redis sentinels about this redis cluster
-### NOTE: To run all the below commands, install redis-tools in your terminal using -> sudo apt install redis-tools
+#### NOTE: To run all the below commands, install redis-tools in your terminal using -> sudo apt install redis-tools
 
 |Command                                                      |    Description                                           |
 --------------------------------------------------------------|----------------------------------------------------------|	                                                  
